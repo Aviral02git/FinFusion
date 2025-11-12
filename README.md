@@ -4,6 +4,9 @@
 
 ---
 
+
+
+
 ### Features:
 
 - **Expense Tracking** – Categorise and monitor your spending by day, week, or month.  
@@ -11,6 +14,7 @@
 - **AI-Powered Insights** – Get smart recommendations and financial analysis.  
 - **Secure Authentication** – Protected routes and data using JWT authentication.  
 - **Responsive UI** – Sleek and modern interface for all devices.  
+
 
 ---
 

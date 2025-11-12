@@ -28,7 +28,8 @@ model BankAccount {
 
   @@index([userId], map: "BankAccount_userId_fkey")
 }
- 
+
+
 model Transaction {
   id            Int       @id @default(autoincrement())
   amount        Float

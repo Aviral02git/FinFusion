@@ -2,6 +2,7 @@
 const express=require("express");
 const cors=require("cors");
 const bankRoutes = require("./src/routes/bankRoutes.js");
+const transactionRoutes = require("./src/routes/transactionRoutes");
 require("dotenv").config();
 
 
@@ -11,6 +12,7 @@ const app=express();
 
 app.use(cors());
 app.use(express.json());
+app.use("/api/transactions", transactionRoutes);
 
 const authRoutes= require("./src/routes/authRoutes");
 

@@ -5,7 +5,7 @@ const prisma = new PrismaClient();
 // Create a new bank account
 const createAccount = async (req, res) => {
   try {
-    const { bankname, accountNo, balance } = req.body;
+    const {bankname,accountNo,balance } = req.body;
     const userId = req.user.id; // user info comes from verifyToken
 
     const account = await prisma.bankAccount.create({
