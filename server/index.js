@@ -12,7 +12,8 @@ const app=express();
 
 
 app.use(cors({
-    origin: ["https://finfusion-wheat.vercel.app", "http://localhost:3000"],
+    origin: ["https://fin-fusion-wheat.vercel.app", "http://localhost:3000"],
+    methods: ["GET", "POST", "PUT", "DELETE"],
     credentials: true
   }));
   
