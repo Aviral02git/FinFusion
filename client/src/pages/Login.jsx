@@ -22,8 +22,8 @@ const Login = () => {
   const handleSubmit = async (e) => {
     e.preventDefault();
     const endpoint = isLogin
-      ? "http://localhost:8080/api/auth/login"
-      : "http://localhost:8080/api/auth/register";
+      ? "https://finfusion-ecvy.onrender.com/api/auth/login"
+      : "https://finfusion-ecvy.onrender.com/api/auth/register";
 
     try {
       const res = await axios.post(endpoint, formData);
