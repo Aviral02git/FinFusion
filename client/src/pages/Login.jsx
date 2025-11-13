@@ -144,7 +144,7 @@ export default function FinFusionAuth() {
       setCurrentSlide((prev) => (prev + 1) % features.length);
     }, 4000);
     return () => clearInterval(timer);
-  }, []);
+  }, [features.length]);
 
   const handleChange = (e) => {
     setFormData({ ...formData, [e.target.name]: e.target.value });
