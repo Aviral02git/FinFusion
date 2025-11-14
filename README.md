@@ -24,6 +24,6 @@
 |-----------|-------------|
 | **Frontend** | React.js, Tailwind CSS |
 | **Backend** | Node.js, Express.js |
-| **Database** | Prisma ORM + PostgreSQL |
+| **Database** | Prisma ORM + mySQL |
 | **Authentication** | JWT |
 | **Version Control** | Git & GitHub |
