@@ -4,7 +4,7 @@ const prisma = new PrismaClient();
 // CREATE TRANSACTION
 const createTransaction = async (req, res) => {
   try {
-    const { amount, type, description, accountId, category } = req.body;
+    const {amount, type, description, accountId, category } = req.body;
     const userId = req.user.id;
 
     // Convert amount safely
@@ -111,7 +111,7 @@ const getTransactions = async (req, res) => {
       maxAmount
     } = req.query;
 
-    const skip = (page - 1) * limit;
+    const skip =(page - 1) * limit;
 
     // Build filters object
     const filters = {
