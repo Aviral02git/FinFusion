@@ -12,7 +12,7 @@ require("dotenv").config();
 const app=express();
 
 app.use(cors({
-    origin: ["https://fin-fusion-wheat.vercel.app", "http://localhost:3000"],
+    origin: ["https://fin-fusion-wheat.vercel.app","*"],
     methods: ["GET", "POST", "PUT", "DELETE"],
     credentials: true
   }));
