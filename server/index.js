@@ -1,6 +1,6 @@
 
-const express=require("express");
-const cors=require("cors");
+const express = require("express");
+const cors = require("cors");
 const bankRoutes = require("./src/routes/bankRoutes.js");
 const transactionRoutes = require("./src/routes/transactionRoutes");
 const analyticsRoutes = require("./src/routes/analyticsRoutes");
@@ -9,32 +9,37 @@ require("dotenv").config();
 
 // console.log("Environment loaded, PORT =", process.env.PORT);
 
-const app=express();
+const app = express();
 
 app.use(cors({
-    origin: ["https://fin-fusion-wheat.vercel.app","*"],
-    methods: ["GET", "POST", "PUT", "DELETE"],
-    credentials: true
-  }));
-  
+  origin: [
+    "https://fin-fusion-1prcbd42fw-aviral-mishras-projects-eb5536f4.vercel.app",
+    "https://fin-fusion-wheat.vercel.app",    // optional old domain
+    "http://localhost:3000",
+    "http://localhost:5173"
+  ],
+  methods: ["GET", "POST", "PUT", "DELETE"],
+  credentials: true
+}));
+
 app.use(express.json());
 app.use("/api/transactions", transactionRoutes);
 
-const authRoutes= require("./src/routes/authRoutes");
+const authRoutes = require("./src/routes/authRoutes");
 
 
-app.use("/api/auth", authRoutes); 
+app.use("/api/auth", authRoutes);
 
 app.use("/api/bank", bankRoutes);
 
 app.use("/api/analytics", analyticsRoutes);
 
-app.get("/",(req,res)=>{
-    res.send("finfusion backend running fast")
+app.get("/", (req, res) => {
+  res.send("finfusion backend running fast")
 });
 
-const PORT=process.env.PORT || 8080;
+const PORT = process.env.PORT || 8080;
 
-app.listen(PORT,()=>console.log(`server is running on port ${PORT}`))
+app.listen(PORT, () => console.log(`server is running on port ${PORT}`))
 
 
