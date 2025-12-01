@@ -1,5 +1,5 @@
-// Base API URL
-const API_BASE_URL = 'http://localhost:8080';
+// Base API URL - uses environment variable in production, localhost in development
+const API_BASE_URL = process.env.REACT_APP_API_URL || 'http://localhost:8080';
 
 // Helper function to get auth token
 const getAuthToken = () => {

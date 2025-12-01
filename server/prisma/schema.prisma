@@ -19,13 +19,9 @@ model User {
   role      Role     @default(USER)
   createdAt DateTime @default(now())
 
-  bankAccounts   BankAccount[]
-  transactions   Transaction[]
-  notifications  Notification[]
-  cards          Card[]
-  chequeRequests ChequeRequest[]
-  refreshTokens  RefreshToken[]
-  auditLogs      AuditLog[]
+  bankAccounts  BankAccount[]
+  transactions  Transaction[]
+  notifications Notification[]
 }
 
 enum Role {
@@ -52,9 +48,7 @@ model BankAccount {
   userId Int
   user   User @relation(fields: [userId], references: [id])
 
-  transactions  Transaction[]
-  transfersFrom Transfer[]    @relation("TransferFrom")
-  transfersTo   Transfer[]    @relation("TransferTo")
+  transactions Transaction[]
 
   @@index([userId])
 }
@@ -119,87 +113,4 @@ model Notification {
   user   User @relation(fields: [userId], references: [id])
 
   @@index([userId])
-}
-
-/////////////////////////////////////////////////////////////
-// 💳 CARD SERVICES
-/////////////////////////////////////////////////////////////
-
-model Card {
-  id        Int        @id @default(autoincrement())
-  status    CardStatus @default(ACTIVE)
-  number    String     @unique
-  createdAt DateTime   @default(now())
-
-  userId Int
-  user   User @relation(fields: [userId], references: [id])
-}
-
-enum CardStatus {
-  ACTIVE
-  BLOCKED
-}
-
-/////////////////////////////////////////////////////////////
-// 🧾 CHEQUE BOOK REQUEST MODEL
-/////////////////////////////////////////////////////////////
-
-model ChequeRequest {
-  id        Int          @id @default(autoincrement())
-  status    ChequeStatus @default(PENDING)
-  createdAt DateTime     @default(now())
-
-  userId Int
-  user   User @relation(fields: [userId], references: [id])
-}
-
-enum ChequeStatus {
-  PENDING
-  APPROVED
-  REJECTED
-}
-
-/////////////////////////////////////////////////////////////
-// 🔁 TRANSFER LOGS (simulated internal transfers)
-/////////////////////////////////////////////////////////////
-
-model Transfer {
-  id             Int      @id @default(autoincrement())
-  amount         Decimal  @db.Decimal(12, 2)
-  createdAt      DateTime @default(now())
-  fromAccountId  Int
-  toAccountId    Int
-  note           String?
-  idempotencyKey String?  @unique
-
-  fromAccount BankAccount @relation("TransferFrom", fields: [fromAccountId], references: [id])
-  toAccount   BankAccount @relation("TransferTo", fields: [toAccountId], references: [id])
-}
-
-/////////////////////////////////////////////////////////////
-// 🔁 REFRESH TOKENS (httpOnly cookie flow)
-/////////////////////////////////////////////////////////////
-
-model RefreshToken {
-  id        Int      @id @default(autoincrement())
-  token     String   @unique
-  userId    Int
-  createdAt DateTime @default(now())
-  expiresAt DateTime
-  user      User     @relation(fields: [userId], references: [id])
-}
-
-/////////////////////////////////////////////////////////////
-// 🪪 AUDIT LOGS
-/////////////////////////////////////////////////////////////
-
-model AuditLog {
-  id        Int      @id @default(autoincrement())
-  userId    Int?
-  action    String
-  meta      String? // store JSON string if needed
-  ip        String?
-  ua        String? // user agent
-  createdAt DateTime @default(now())
-  User      User?    @relation(fields: [userId], references: [id])
 }
