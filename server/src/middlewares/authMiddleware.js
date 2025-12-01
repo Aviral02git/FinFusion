@@ -1,22 +1,27 @@
 const jwt = require("jsonwebtoken");
 
-// Middleware to verify token
 const verifyToken = (req, res, next) => {
-  const authHeader = req.headers["authorization"];
-  
-  // Expected format: "Bearer <token>"
-  const token = authHeader && authHeader.split(" ")[1];
-  
-  
-  if (!token) {
-    return res.status(403).json({ message: "Access denied. No token provided." });
+  const header = req.headers["authorization"];
+
+  if (!header) {
+    return res.status(401).json({ message: "Authorization header missing" });
   }
+
+  const token = header.split(" ")[1];
+
+  if (!token) {
+    return res.status(401).json({ message: "Token missing" });
+  }
+
   try {
-    const verified = jwt.verify(token, process.env.JWT_SECRET);
-    req.user = verified; // Add user data (like userId) to req
-    next(); // Continue to next middleware/controller
+    const decoded = jwt.verify(token, process.env.JWT_SECRET);
+
+    // MUST contain: { id, email }
+    req.user = decoded;
+
+    next();
   } catch (err) {
-    res.status(401).json({ message: "Invalid or expired token." });
+    return res.status(401).json({ message: "Invalid or expired token" });
   }
 };
 
