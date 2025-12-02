@@ -15,14 +15,15 @@ const app = express();
 app.use(
   cors({
     origin: [
-      "http://localhost:3000", // local development
-      "https://fin-fusion-1prcb42fw-aviral-mishras-projects-eb5536f4.vercel.app",
-      "https://fin-fusion-git-main-aviral-mishras-projects-eb5536f4.vercel.app"
+      "http://localhost:3000",
+      "https://fin-fusion-git-main-aviral-mishras-projects-eb5536f4.vercel.app",
+      "https://fin-fusion-1prcb42fw-aviral-mishras-projects-eb5536f4.vercel.app"
     ],
     credentials: true,
     methods: ["GET", "POST", "PUT", "DELETE"],
   })
 );
+
 
 app.use(express.json());
 app.use("/api/transactions", transactionRoutes);
