@@ -17,7 +17,8 @@ app.use(
     origin: [
       "http://localhost:3000",
       "https://fin-fusion-git-main-aviral-mishras-projects-eb5536f4.vercel.app",
-      "https://fin-fusion-1prcb42fw-aviral-mishras-projects-eb5536f4.vercel.app"
+      "https://fin-fusion-1prcb42fw-aviral-mishras-projects-eb5536f4.vercel.app",
+      "https://fin-fusion-wheat.vercel.app"
     ],
     credentials: true,
     methods: ["GET", "POST", "PUT", "DELETE"],
