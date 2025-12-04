@@ -9,37 +9,27 @@ const authRoutes = require("./src/routes/authRoutes");
 
 const app = express();
 
-// REQUIRED when hosting on Render and calling via HTTPS (cookies/JWT)
 app.set("trust proxy", 1);
 
 const allowedOrigins = [
   "http://localhost:3000",
   "http://localhost:5173",
-  "https://fin-fusion-wheat.vercel.app", // frontend
-  "https://finfusion.onrender.com"      // backend live (Render domain)
+  "https://fin-fusion-wheat.vercel.app",
+  "https://finfusion.onrender.com"
 ];
 
-// CORS Handling
 app.use(
   cors({
     origin: function (origin, callback) {
-      // allow no-origin calls (Render health checks, Postman)
-      if (!origin) return callback(null, true);
-
-      if (allowedOrigins.includes(origin)) {
-        return callback(null, true);
-      } else {
-        return callback(new Error("CORS blocked: " + origin));
-      }
+      if (!origin) return callback(null, true); // Render / Postman
+      if (allowedOrigins.includes(origin)) return callback(null, true);
+      return callback(new Error("CORS blocked: " + origin));
     },
     credentials: true,
     methods: "GET,POST,PUT,DELETE,OPTIONS",
     allowedHeaders: "Content-Type,Authorization",
   })
 );
-
-// Preflight CORS
-app.options("*", cors());
 
 app.use(express.json());
 
