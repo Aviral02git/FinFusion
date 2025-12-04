@@ -16,18 +16,18 @@ app.use(
   cors({
     origin: [
       "http://localhost:3000",
-      "https://fin-fusion-git-main-aviral-mishras-projects-eb5536f4.vercel.app",
-      "https://fin-fusion-1prcb42fw-aviral-mishras-projects-eb5536f4.vercel.app",
+      "http://localhost:5173",
       "https://fin-fusion-wheat.vercel.app"
     ],
     credentials: true,
     methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
     allowedHeaders: ["Content-Type", "Authorization"],
-    exposedHeaders: ["Content-Type", "Authorization"],
-    preflightContinue: false,
-    optionsSuccessStatus: 204
   })
 );
+
+// Fix preflight
+app.options("*", cors());
+
 
 app.use(express.json());
 app.use("/api/transactions", transactionRoutes);
