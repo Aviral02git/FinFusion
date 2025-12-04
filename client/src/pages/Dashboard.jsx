@@ -90,25 +90,10 @@ export default function Dashboard() {
   // ============================================
   // ADD ACCOUNT
   // ============================================
-  const handleAccountAdded = async (newAccount) => {
-    try {
-      await bankAccountService.create({
-        bankName: newAccount.bankName,
-        shortName: newAccount.shortName,
-        accountNo: newAccount.accountNo,
-        type: newAccount.type,
-        balance: newAccount.balance,
-        logo: newAccount.logo,
-        color: newAccount.color,
-        bgColor: newAccount.bgColor
-      });
-
-      await loadAccounts();
-      setShowAddAccountModal(false);
-    } catch (error) {
-      console.error('Error adding account:', error);
-      alert('Failed to add account.');
-    }
+  const handleAccountAdded = async () => {
+    // Just reload the accounts list - the modal already created the account
+    await loadAccounts();
+    setShowAddAccountModal(false);
   };
 
   // ============================================
@@ -136,11 +121,11 @@ export default function Dashboard() {
   const totalBalance = accounts.reduce((sum, acc) => sum + (acc.balance || 0), 0);
 
   const totalIncome = transactions
-    .filter(t => t.type === 'credit')
+    .filter(t => t.type === 'CREDIT')
     .reduce((sum, t) => sum + t.amount, 0);
 
   const totalExpense = transactions
-    .filter(t => t.type === 'debit')
+    .filter(t => t.type === 'DEBIT')
     .reduce((sum, t) => sum + t.amount, 0);
 
   // ============================================
@@ -494,16 +479,16 @@ export default function Dashboard() {
                       return (
                         <div key={transaction.id} className="flex items-center justify-between p-3 hover:bg-gray-50 rounded-lg transition group border border-transparent hover:border-gray-100">
                           <div className="flex items-center space-x-3">
-                            <div className={`w-10 h-10 rounded-lg flex items-center justify-center ${transaction.type === 'credit' ? 'bg-emerald-100' : 'bg-red-100'}`}>
-                              <Icon className={transaction.type === 'credit' ? 'text-emerald-600' : 'text-red-600'} size={18} />
+                            <div className={`w-10 h-10 rounded-lg flex items-center justify-center ${transaction.type === 'CREDIT' ? 'bg-emerald-100' : 'bg-red-100'}`}>
+                              <Icon className={transaction.type === 'CREDIT' ? 'text-emerald-600' : 'text-red-600'} size={18} />
                             </div>
                             <div>
                               <p className="font-semibold text-gray-900 text-sm">{transaction.merchant}</p>
                               <p className="text-xs text-gray-500">{transaction.category} • {transaction.date}</p>
                             </div>
                           </div>
-                          <p className={`font-bold text-sm ${transaction.type === 'credit' ? 'text-emerald-600' : 'text-red-600'}`}>
-                            {transaction.type === 'credit' ? '+' : '-'}₹{transaction.amount.toLocaleString()}
+                          <p className={`font-bold text-sm ${transaction.type === 'CREDIT' ? 'text-emerald-600' : 'text-red-600'}`}>
+                            {transaction.type === 'CREDIT' ? '+' : '-'}₹{transaction.amount.toLocaleString()}
                           </p>
                         </div>
                       );

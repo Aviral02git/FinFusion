@@ -1,5 +1,4 @@
-const { PrismaClient } = require("@prisma/client");
-const prisma = new PrismaClient();
+const prisma = require("../utils/prismaClient");
 
 // CREATE ACCOUNT
 const createAccount = async (req, res) => {
@@ -38,7 +37,19 @@ const createAccount = async (req, res) => {
     });
   } catch (error) {
     console.error("Error creating bank account:", error);
-    res.status(500).json({ message: "Failed to create bank account" });
+
+    // Handle duplicate account number
+    if (error.code === 'P2002') {
+      return res.status(400).json({
+        success: false,
+        message: "This account number already exists. Please use a different number."
+      });
+    }
+
+    res.status(500).json({
+      success: false,
+      message: "Failed to create bank account"
+    });
   }
 };
 

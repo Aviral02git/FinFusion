@@ -57,7 +57,7 @@ export default function AddBankAccountModal({ isOpen, onClose, onSuccess }) {
         try {
             const token = localStorage.getItem('token'); // Adjust based on your auth implementation
 
-            const response = await fetch('http://localhost:5000/bank/create', {
+            const response = await fetch('http://localhost:8080/api/bank/create', {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
@@ -234,8 +234,8 @@ export default function AddBankAccountModal({ isOpen, onClose, onSuccess }) {
                                     type="button"
                                     onClick={() => handleColorSelect(option.value, option.bg)}
                                     className={`p-4 rounded-xl border-2 transition ${formData.color === option.value
-                                            ? 'border-emerald-500 bg-emerald-50'
-                                            : 'border-gray-200 hover:border-gray-300'
+                                        ? 'border-emerald-500 bg-emerald-50'
+                                        : 'border-gray-200 hover:border-gray-300'
                                         }`}
                                 >
                                     <div className={`w-full h-12 ${option.preview} rounded-lg mb-2`}></div>
