@@ -26,20 +26,144 @@ const registerUser = async (req, res) => {
     // Hash password
     const hashedPassword = await bcrypt.hash(password, 10);
 
-    // Create user
-    const newUser = await prisma.user.create({
-      data: {
-        name,
-        email,
-        password: hashedPassword,
-      },
+    // Create user with sample bank account and transactions in a transaction
+    const result = await prisma.$transaction(async (tx) => {
+      // 1️⃣ Create user
+      const newUser = await tx.user.create({
+        data: {
+          name,
+          email,
+          password: hashedPassword,
+        },
+      });
+
+      // 2️⃣ Create a sample bank account for the new user
+      const sampleAccount = await tx.bankAccount.create({
+        data: {
+          userId: newUser.id,
+          accountNumber: `DEMO${Math.floor(100000 + Math.random() * 900000)}`,
+          bankName: "Sample Bank",
+          accountType: "SAVINGS",
+          balance: 50000, // Starting balance of ₹50,000
+        },
+      });
+
+      // 3️⃣ Create sample transactions for the new user
+      const sampleTransactions = [
+        {
+          amount: 35000,
+          type: "CREDIT",
+          category: "INCOME",
+          description: "Monthly Salary",
+          accountId: sampleAccount.id,
+          userId: newUser.id,
+          timestamp: new Date(Date.now() - 5 * 24 * 60 * 60 * 1000), // 5 days ago
+        },
+        {
+          amount: 2500,
+          type: "DEBIT",
+          category: "SHOPPING",
+          description: "Online Shopping - Amazon",
+          accountId: sampleAccount.id,
+          userId: newUser.id,
+          timestamp: new Date(Date.now() - 4 * 24 * 60 * 60 * 1000), // 4 days ago
+        },
+        {
+          amount: 450,
+          type: "DEBIT",
+          category: "FOOD",
+          description: "Starbucks Coffee",
+          accountId: sampleAccount.id,
+          userId: newUser.id,
+          timestamp: new Date(Date.now() - 3 * 24 * 60 * 60 * 1000), // 3 days ago
+        },
+        {
+          amount: 320,
+          type: "DEBIT",
+          category: "TRANSPORT",
+          description: "Uber Ride",
+          accountId: sampleAccount.id,
+          userId: newUser.id,
+          timestamp: new Date(Date.now() - 3 * 24 * 60 * 60 * 1000), // 3 days ago
+        },
+        {
+          amount: 1200,
+          type: "DEBIT",
+          category: "BILLS",
+          description: "Electricity Bill",
+          accountId: sampleAccount.id,
+          userId: newUser.id,
+          timestamp: new Date(Date.now() - 2 * 24 * 60 * 60 * 1000), // 2 days ago
+        },
+        {
+          amount: 850,
+          type: "DEBIT",
+          category: "ENTERTAINMENT",
+          description: "Movie Tickets",
+          accountId: sampleAccount.id,
+          userId: newUser.id,
+          timestamp: new Date(Date.now() - 2 * 24 * 60 * 60 * 1000), // 2 days ago
+        },
+        {
+          amount: 5000,
+          type: "CREDIT",
+          category: "REFUND",
+          description: "Product Return Refund",
+          accountId: sampleAccount.id,
+          userId: newUser.id,
+          timestamp: new Date(Date.now() - 1 * 24 * 60 * 60 * 1000), // 1 day ago
+        },
+        {
+          amount: 680,
+          type: "DEBIT",
+          category: "FOOD",
+          description: "Restaurant Dinner",
+          accountId: sampleAccount.id,
+          userId: newUser.id,
+          timestamp: new Date(Date.now() - 1 * 24 * 60 * 60 * 1000), // 1 day ago
+        },
+        {
+          amount: 1500,
+          type: "DEBIT",
+          category: "SHOPPING",
+          description: "Clothing Store",
+          accountId: sampleAccount.id,
+          userId: newUser.id,
+          timestamp: new Date(Date.now() - 12 * 60 * 60 * 1000), // 12 hours ago
+        },
+        {
+          amount: 200,
+          type: "DEBIT",
+          category: "TRANSPORT",
+          description: "Metro Card Recharge",
+          accountId: sampleAccount.id,
+          userId: newUser.id,
+          timestamp: new Date(Date.now() - 6 * 60 * 60 * 1000), // 6 hours ago
+        },
+      ];
+
+      // Create all sample transactions
+      await tx.transaction.createMany({
+        data: sampleTransactions,
+      });
+
+      // 4️⃣ Create a welcome notification
+      await tx.notification.create({
+        data: {
+          title: "Welcome to FinFusion! 🎉",
+          message: "Your account has been created with sample transactions to help you explore the app.",
+          userId: newUser.id,
+        },
+      });
+
+      return newUser;
     });
 
     // JWT PAYLOAD FIX (must use `id`)
     const token = jwt.sign(
       {
-        id: newUser.id,
-        email: newUser.email,
+        id: result.id,
+        email: result.email,
       },
       process.env.JWT_SECRET,
       { expiresIn: "1d" }
@@ -48,9 +172,9 @@ const registerUser = async (req, res) => {
     res.status(201).json({
       message: "User registered successfully",
       user: {
-        id: newUser.id,
-        name: newUser.name,
-        email: newUser.email,
+        id: result.id,
+        name: result.name,
+        email: result.email,
       },
       token,
     });
