@@ -94,6 +94,11 @@ export const notificationAPI = {
 
 // Analytics APIs
 export const analyticsAPI = {
+    // Get summary for dashboard
+    getSummary: async () => {
+        return authenticatedFetch('/api/analytics/summary');
+    },
+
     // Get spending analytics
     getSpendingAnalytics: async (params = {}) => {
         const queryString = new URLSearchParams(params).toString();

@@ -6,6 +6,9 @@ import ProfileSettings from '../components/ProfileSettings';
 import Sidebar from '../components/Sidebar';
 import { bankAccountService } from '../services/bankAccountService';
 import { transactionService } from '../services/transactionService';
+import { analyticsAPI } from '../services/api';
+import { AnimatedCounter, TrendIndicator, MiniSparkline } from '../components/Charts';
+import toast, { Toaster } from 'react-hot-toast';
 import { mockUser, mockNotifications, mockAnalytics, mockUpcomingBills, mockSmartAlerts, mockSpendingSnapshot } from '../data/mockData';
 
 import {
@@ -54,6 +57,11 @@ export default function Dashboard() {
   const [accounts, setAccounts] = useState([]);
   const [transactions, setTransactions] = useState([]);
   const [loadingTransactions, setLoadingTransactions] = useState(true);
+  const [summary, setSummary] = useState({
+    totalBalance: 0,
+    totalIncomeThisMonth: 0,
+    totalExpensesThisMonth: 0,
+  });
 
   const user = mockUser;
 
@@ -63,14 +71,17 @@ export default function Dashboard() {
   useEffect(() => {
     loadAccounts();
     loadTransactions();
+    loadSummary();
   }, []);
 
   const loadAccounts = async () => {
     try {
       const data = await bankAccountService.getAll();
-      setAccounts(data);
+      console.log('Loaded accounts:', data);
+      setAccounts(data || []);
     } catch (error) {
       console.error('Error loading accounts:', error);
+      setAccounts([]);
     }
   };
 
@@ -87,13 +98,49 @@ export default function Dashboard() {
     }
   };
 
+  const loadSummary = async () => {
+    try {
+      console.log('Loading analytics summary...');
+      const response = await analyticsAPI.getSummary();
+      console.log('Analytics summary response:', response);
+
+      if (response.success && response.data) {
+        const summaryData = {
+          totalBalance: response.data.totalBalance || 0,
+          totalIncomeThisMonth: response.data.totalIncomeThisMonth || 0,
+          totalExpensesThisMonth: response.data.totalExpensesThisMonth || 0,
+        };
+        console.log('Setting summary data:', summaryData);
+        setSummary(summaryData);
+      } else {
+        console.warn('Invalid response format:', response);
+      }
+    } catch (error) {
+      console.error('Error loading summary:', error);
+      toast.error('Failed to load financial summary', {
+        duration: 3000,
+        position: 'top-right',
+      });
+    }
+  };
+
   // ============================================
   // ADD ACCOUNT
   // ============================================
   const handleAccountAdded = async () => {
     // Just reload the accounts list - the modal already created the account
     await loadAccounts();
+    await loadSummary();
     setShowAddAccountModal(false);
+    toast.success('Bank account added successfully! 🎉', {
+      duration: 3000,
+      style: {
+        background: '#10b981',
+        color: '#fff',
+        padding: '16px',
+        borderRadius: '12px',
+      },
+    });
   };
 
   // ============================================
@@ -118,15 +165,10 @@ export default function Dashboard() {
 
   const unreadCount = notifications.filter(n => !n.read).length;
 
-  const totalBalance = accounts.reduce((sum, acc) => sum + (acc.balance || 0), 0);
-
-  const totalIncome = transactions
-    .filter(t => t.type === 'CREDIT')
-    .reduce((sum, t) => sum + t.amount, 0);
-
-  const totalExpense = transactions
-    .filter(t => t.type === 'DEBIT')
-    .reduce((sum, t) => sum + t.amount, 0);
+  // Use summary data from API instead of calculating from limited transactions
+  const totalBalance = summary.totalBalance;
+  const totalIncome = summary.totalIncomeThisMonth;
+  const totalExpense = summary.totalExpensesThisMonth;
 
   // ============================================
   // TRANSACTION ICON FUNCTION
@@ -146,6 +188,8 @@ export default function Dashboard() {
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-gray-50 via-emerald-50/30 to-blue-50/30 flex">
+      {/* Toast Notifications */}
+      <Toaster position="top-right" />
 
       {/* SIDEBAR */}
       <Sidebar isOpen={sidebarOpen} onClose={() => setSidebarOpen(false)} />
@@ -290,10 +334,13 @@ export default function Dashboard() {
 
           {/* 1. Welcome Section */}
           <div className="animate-fade-in-up">
-            <h2 className="text-3xl font-bold bg-gradient-to-r from-gray-900 to-emerald-600 bg-clip-text text-transparent">
-              Welcome back, {user.name.split(' ')[0]}! 👋
-            </h2>
-            <p className="text-gray-600 mt-1">Here’s your financial overview at a glance.</p>
+            <div className="flex items-center gap-3 mb-2">
+              <h2 className="text-3xl font-bold bg-gradient-to-r from-gray-900 to-emerald-600 bg-clip-text ">
+                Welcome back, {user.name.split(' ')[0]}!
+              </h2>
+              <div className="w-2 h-2 bg-emerald-500 rounded-full animate-pulse"></div>
+            </div>
+            <p className="text-gray-600">Here's your financial overview at a glance.</p>
           </div>
 
           {/* 2. Key Metrics Cards */}
@@ -304,10 +351,15 @@ export default function Dashboard() {
                 <div className="w-12 h-12 bg-gradient-to-br from-emerald-400 to-emerald-600 rounded-lg flex items-center justify-center shadow-lg">
                   <Wallet className="text-white" size={24} />
                 </div>
-                <TrendingUp className="text-emerald-500" size={20} />
+                <TrendIndicator value={5.2} isPositive={true} />
               </div>
               <p className="text-sm text-gray-600 mb-1">Total Balance</p>
-              <p className="text-2xl font-bold text-gray-900">₹{totalBalance.toLocaleString()}</p>
+              <p className="text-3xl font-bold text-gray-900">
+                <AnimatedCounter value={totalBalance} />
+              </p>
+              <div className="mt-3">
+                <MiniSparkline data={[45000, 52000, 48000, 55000, 60000, 58000, totalBalance]} color="#10b981" />
+              </div>
               <p className="text-xs text-gray-500 mt-2">Your net worth across all accounts.</p>
             </div>
 
@@ -317,11 +369,16 @@ export default function Dashboard() {
                 <div className="w-12 h-12 bg-gradient-to-br from-blue-400 to-blue-600 rounded-lg flex items-center justify-center shadow-lg">
                   <ArrowDownLeft className="text-white" size={24} />
                 </div>
-                <TrendingUp className="text-blue-500" size={20} />
+                <TrendIndicator value={12.5} isPositive={true} />
               </div>
               <p className="text-sm text-gray-600 mb-1">Total Income</p>
-              <p className="text-2xl font-bold text-gray-900">₹{totalIncome.toLocaleString()}</p>
-              <p className="text-xs text-gray-500 mt-2">This month’s credited earnings.</p>
+              <p className="text-3xl font-bold text-gray-900">
+                <AnimatedCounter value={totalIncome} />
+              </p>
+              <div className="mt-3">
+                <MiniSparkline data={[12000, 18000, 15000, 20000, 22000, 25000, totalIncome]} color="#3b82f6" />
+              </div>
+              <p className="text-xs text-gray-500 mt-2">This month's credited earnings.</p>
             </div>
 
             {/* Expenses */}
@@ -330,10 +387,15 @@ export default function Dashboard() {
                 <div className="w-12 h-12 bg-gradient-to-br from-red-400 to-red-600 rounded-lg flex items-center justify-center shadow-lg">
                   <ArrowUpRight className="text-white" size={24} />
                 </div>
-                <TrendingDown className="text-red-500" size={20} />
+                <TrendIndicator value={-8.3} isPositive={false} />
               </div>
               <p className="text-sm text-gray-600 mb-1">Total Expenses</p>
-              <p className="text-2xl font-bold text-gray-900">₹{totalExpense.toLocaleString()}</p>
+              <p className="text-3xl font-bold text-gray-900">
+                <AnimatedCounter value={totalExpense} />
+              </p>
+              <div className="mt-3">
+                <MiniSparkline data={[8000, 12000, 10000, 15000, 14000, 11000, totalExpense]} color="#ef4444" />
+              </div>
               <p className="text-xs text-gray-500 mt-2">All tracked spending for this month.</p>
             </div>
           </div>
@@ -550,23 +612,43 @@ export default function Dashboard() {
                   <h3 className="text-xl font-bold text-gray-900">Upcoming Bills</h3>
                   <p className="text-sm text-gray-500">Stay ahead of your monthly dues.</p>
                 </div>
-                <div className="space-y-4">
-                  {mockUpcomingBills.map((bill) => (
-                    <div key={bill.id} className="flex items-center justify-between">
-                      <div className="flex items-center gap-3">
-                        <div className="w-8 h-8 bg-orange-100 rounded-lg flex items-center justify-center">
-                          {bill.icon === 'Zap' && <Zap size={16} className="text-orange-600" />}
-                          {bill.icon === 'CreditCard' && <CreditCard size={16} className="text-orange-600" />}
-                          {bill.icon === 'Wifi' && <Wifi size={16} className="text-orange-600" />}
+                <div className="space-y-3">
+                  {mockUpcomingBills.map((bill) => {
+                    // Define payment URLs for each service
+                    const paymentUrls = {
+                      'Electricity Bill': 'https://www.billdesk.com/',
+                      'Credit Card Payment': 'https://www.axisbank.com/retail/cards/credit-card',
+                      'WiFi Plan': 'https://www.jio.com/selfcare/plans/'
+                    };
+
+                    return (
+                      <div key={bill.id} className="flex items-center justify-between p-3 hover:bg-gray-50 rounded-lg transition border border-transparent hover:border-gray-200">
+                        <div className="flex items-center gap-3">
+                          <div className="w-10 h-10 bg-orange-100 rounded-lg flex items-center justify-center">
+                            {bill.icon === 'Zap' && <Zap size={18} className="text-orange-600" />}
+                            {bill.icon === 'CreditCard' && <CreditCard size={18} className="text-orange-600" />}
+                            {bill.icon === 'Wifi' && <Wifi size={18} className="text-orange-600" />}
+                          </div>
+                          <div>
+                            <p className="text-sm font-semibold text-gray-900">{bill.name}</p>
+                            <p className="text-xs text-orange-600 font-medium">{bill.dueDate}</p>
+                          </div>
                         </div>
-                        <div>
-                          <p className="text-sm font-semibold text-gray-900">{bill.name}</p>
-                          <p className="text-xs text-orange-600 font-medium">{bill.dueDate}</p>
+                        <div className="flex items-center gap-3">
+                          <p className="text-sm font-bold text-gray-900">₹{bill.amount.toLocaleString()}</p>
+                          <button
+                            onClick={() => window.open(paymentUrls[bill.name] || 'https://www.google.com/search?q=' + encodeURIComponent(bill.name + ' payment'), '_blank')}
+                            className="px-3 py-1.5 bg-gradient-to-r from-emerald-500 to-teal-600 text-white text-xs font-semibold rounded-lg hover:shadow-lg hover-lift transition flex items-center gap-1"
+                          >
+                            <span>Pay Now</span>
+                            <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M14 5l7 7m0 0l-7 7m7-7H3" />
+                            </svg>
+                          </button>
                         </div>
                       </div>
-                      <p className="text-sm font-bold text-gray-900">₹{bill.amount.toLocaleString()}</p>
-                    </div>
-                  ))}
+                    );
+                  })}
                 </div>
               </div>
 
@@ -667,9 +749,10 @@ export default function Dashboard() {
           type={transactionType}
           accounts={accounts}
           onSuccess={async () => {
-            // Reload accounts and transactions after successful transaction
+            // Reload accounts, transactions, and summary after successful transaction
             await loadAccounts();
             await loadTransactions();
+            await loadSummary();
           }}
         />
 

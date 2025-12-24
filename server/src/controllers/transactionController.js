@@ -110,6 +110,10 @@ const getTransactions = async (req, res) => {
       maxAmount
     } = req.query;
 
+    console.log("DEBUG: getTransactions called");
+    console.log("DEBUG: User ID:", userId);
+    console.log("DEBUG: Query Params:", req.query);
+
     const skip = (page - 1) * limit;
 
     // Build filters object
@@ -151,6 +155,8 @@ const getTransactions = async (req, res) => {
       }
     }
 
+    console.log("DEBUG: Constructed Filters:", JSON.stringify(filters, null, 2));
+
     // Build orderBy object
     const validSortFields = ["timestamp", "amount", "type"];
     const sortField = validSortFields.includes(sortBy) ? sortBy : "timestamp";
@@ -170,12 +176,19 @@ const getTransactions = async (req, res) => {
 
     const total = await prisma.transaction.count({ where: filters });
 
+    console.log(`DEBUG: Found ${transactions.length} transactions. Total count: ${total}`);
+
     res.json({
       success: true,
       transactions,
       total,
       page: Number(page),
       totalPages: Math.ceil(total / limit),
+      debug: {
+        userId,
+        filters,
+        count: transactions.length
+      }
     });
 
   } catch (error) {

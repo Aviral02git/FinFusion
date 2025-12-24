@@ -85,8 +85,8 @@ export default function AddTransactionModal({ isOpen, onClose, onSuccess, type =
     if (!isOpen) return null;
 
     return (
-        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
-            <div className="bg-white rounded-2xl shadow-2xl max-w-md w-full max-h-[90vh] overflow-y-auto">
+        <div className="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center z-50 p-4 animate-fade-in">
+            <div className="bg-white rounded-2xl shadow-2xl max-w-md w-full max-h-[90vh] overflow-y-auto animate-scale-in">
                 {/* Header */}
                 <div className="sticky top-0 bg-white border-b border-gray-200 px-6 py-4 rounded-t-2xl">
                     <div className="flex items-center justify-between">
@@ -101,7 +101,8 @@ export default function AddTransactionModal({ isOpen, onClose, onSuccess, type =
                         </div>
                         <button
                             onClick={onClose}
-                            className="text-gray-400 hover:text-gray-600 transition"
+                            className="p-2 text-gray-400 hover:text-gray-600 hover:bg-gray-100 rounded-lg transition"
+                            disabled={loading}
                         >
                             <X size={24} />
                         </button>
@@ -193,13 +194,14 @@ export default function AddTransactionModal({ isOpen, onClose, onSuccess, type =
                         </button>
                         <button
                             type="submit"
-                            className={`flex-1 px-6 py-3 rounded-xl text-white font-medium transition ${type === 'CREDIT'
+                            className={`flex-1 px-6 py-3 rounded-xl text-white font-medium transition hover-lift ${type === 'CREDIT'
                                 ? 'bg-gradient-to-r from-emerald-500 to-teal-600 hover:shadow-lg'
                                 : 'bg-gradient-to-r from-red-500 to-red-600 hover:shadow-lg'
-                                } disabled:opacity-50`}
+                                } disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2`}
                             disabled={loading}
                         >
-                            {loading ? 'Adding...' : type === 'CREDIT' ? 'Add Income' : 'Add Expense'}
+                            {loading && <div className="loading-spinner w-5 h-5 border-2"></div>}
+                            {loading ? 'Processing...' : type === 'CREDIT' ? 'Add Income' : 'Add Expense'}
                         </button>
                     </div>
                 </form>
